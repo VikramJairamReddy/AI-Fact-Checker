@@ -1,0 +1,6 @@
+openai
+python-dotenv
+SpeechRecognition
+PyAudio
+ddgs
+requests
