@@ -10,8 +10,6 @@ from src.claims import extract_claims
 from src.verifier import verify_claim
 from src.report import print_report
 
-# say corrections out loud (mac only). OFF by default, because the mic will
-# hear the computer talking and try to fact check it. use headphones if you turn this on
 SPEAK_ALERTS = False
 
 RED = "\033[91m"
@@ -20,14 +18,14 @@ GREEN = "\033[92m"
 RESET = "\033[0m"
 
 # whisper makes these up when it hears silence or noise
-JUNK = {"thank you", "thanks for watching", "you", "bye", "okay", "yeah"}
+JUNK = {"thank you", "thanks for searching", "bye", "okay", "yeah"}
 
 audio_q = queue.Queue()
 text_q = queue.Queue()
 
 all_results = []
 heard = []      # every phrase, for the final report
-seen = set()    # so the same claim isn't checked twice
+seen = set()    # the same claim isn't checked twice
 
 # 3 workers max, more than that just hits the groq limit faster
 pool = ThreadPoolExecutor(max_workers=3)
