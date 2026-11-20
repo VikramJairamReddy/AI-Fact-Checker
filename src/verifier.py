@@ -17,6 +17,10 @@ Reply with JSON only:
 {"verdict": "...", "explanation": "...", "correct_fact": "...", "evidence_used": [1, 2]}
 correct_fact is "" if the claim is true or unverifiable."""
 
+def clean_title(t):
+    # ddg titles are sometimes several titles stuck together
+    t = " ".join(t.split())
+    return t[:80]
 
 def search_wikipedia(query, limit=3):
     params = {
@@ -63,7 +67,7 @@ def search_web(query, limit=4):
         print("web search failed:", e)
         return []
     return [
-        {"title": h.get("title", ""), "text": h.get("body", "")[:500], "url": h.get("href", "")}
+        {"title": clean_title(h.get("title", "")), "text": h.get("body", "")[:500], "url": h.get("href", "")}
         for h in hits
         if h.get("body")
     ]
@@ -92,11 +96,16 @@ def verify_claim(claim):
 
     # sources come from the real search results, the model can't make up links
     used = [n for n in data.get("evidence_used", []) if isinstance(n, int)]
-    sources = [
-        {"title": evidence[n - 1]["title"], "url": evidence[n - 1]["url"]}
-        for n in used
-        if 1 <= n <= len(evidence)
-    ]
+    sources = []
+    seen_urls = set()
+    for n in used:
+        if 1 <= n <= len(evidence):
+            e = evidence[n - 1]
+            if e["url"] in seen_urls:
+                continue
+            seen_urls.add(e["url"])
+            sources.append({"title": e["title"], "url": e["url"]})
+    sources = sources[:3]
 
     return {
         "claim": claim,
